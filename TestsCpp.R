@@ -2,6 +2,7 @@
 # Header for Rcpp and RcppArmadillo
 library(Rcpp)
 library(RcppArmadillo)
+library(testthat)
 
 # Source your C++ funcitons
 sourceCpp("LassoInC.cpp")
@@ -11,7 +12,8 @@ source("LassoFunctions.R")
 
 # Do at least 2 tests for soft-thresholding function below. You are checking output agreements on at least 2 separate inputs
 #################################################
-
+testthat::expect_equal(soft_c(2, 1), soft(2, 1))
+testthat::expect_equal(soft_c(5, 7), soft(5, 7))
 
 # Do at least 2 tests for lasso objective function below. You are checking output agreements on at least 2 separate inputs
 #################################################
