@@ -6,6 +6,13 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 double soft_c(double a, double lambda){
   // Your function code goes here
+  if (a > lambda) {
+    return a - lambda;
+  } else if (a < -lambda) {
+    return a + lambda;
+  } else {
+    return 0;
+  }
 }
 
 // Lasso objective function, returns scalar
