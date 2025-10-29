@@ -17,7 +17,29 @@ testthat::expect_equal(soft_c(5, 7), soft(5, 7))
 
 # Do at least 2 tests for lasso objective function below. You are checking output agreements on at least 2 separate inputs
 #################################################
+# Set up test data
+set.seed(123)
+X <- matrix(rnorm(20), 5, 4)
+Y <- rnorm(5)
+beta <- rnorm(4)
+lambda <- 0.1
 
+# Compute R and cpp functions
+out_R <- lasso(X, Y, beta, lambda)
+out_cpp <- lasso(X, Y, beta, lambda)
+
+# Test equality
+testthat::expect_equal(out_R, out_cpp)
+
+# Different lambda
+lambda <- 2.2
+
+# Compute R and cpp functions
+out_R <- lasso(X, Y, beta, lambda)
+out_cpp <- lasso(X, Y, beta, lambda)
+
+# Test equality
+testthat::expect_equal(out_R, out_cpp)
 
 # Do at least 2 tests for fitLASSOstandardized function below. You are checking output agreements on at least 2 separate inputs
 #################################################
