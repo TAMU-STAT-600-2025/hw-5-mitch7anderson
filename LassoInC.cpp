@@ -19,6 +19,15 @@ double soft_c(double a, double lambda){
 // [[Rcpp::export]]
 double lasso_c(const arma::mat& Xtilde, const arma::colvec& Ytilde, const arma::colvec& beta, double lambda){
   // Your function code goes here
+  
+  // Get rows of Xtilde and calculate residuals
+  int n = Xtilde.n_rows;
+  arma::colvec r = Ytilde - Xtilde * beta;
+  
+  // Calculate objective function
+  double fobj = (1.0 / 2.0 * n) * arma::dot(r, r) + lambda * arma::sum(arma::abs(beta));
+  
+  return fobj;
 }
 
 // Lasso coordinate-descent on standardized data with one lamdba. Returns a vector beta.
