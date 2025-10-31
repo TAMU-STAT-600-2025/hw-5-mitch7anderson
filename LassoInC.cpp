@@ -89,4 +89,26 @@ arma::colvec fitLASSOstandardized_c(const arma::mat& Xtilde, const arma::colvec&
 // [[Rcpp::export]]
 arma::mat fitLASSOstandardized_seq_c(const arma::mat& Xtilde, const arma::colvec& Ytilde, const arma::colvec& lambda_seq, double eps = 0.001){
   // Your function code goes here
+  
+  // Get necessary sizes of Xtilde and lambda_seq
+  int p = Xtilde.n_cols;
+  int l = lambda_seq.n_elem;
+  
+  // Initialize empty beta matrix and fmin vector
+  arma::mat beta_mat(p, l, arma::fill::zeros);
+  arma::vec fmin_vec = arma::zeros<arma::vec>(l);
+  
+  // Initialize beta_start
+  arma::colvec beta_start = arma::zeros<arma::colvec>(p);
+  
+  // Apply fitlassostandardized_c going from largest to smallest lambda
+  // Utilize warm starts method
+  for(int i = 0; i < l; ++i){
+    double lambda_i= lambda_seq(i);
+    arma::colvec beta_i = fitLASSOstandardized_c(Xtilde, Ytilde, lambda_i, beta_start, eps);
+    beta_mat.col(i) = beta_i;
+    beta_start = beta_i;
+  }
+  
+  return(beta_mat);
 }
