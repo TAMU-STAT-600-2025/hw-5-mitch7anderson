@@ -22,11 +22,13 @@ set.seed(123)
 X <- matrix(rnorm(20), 5, 4)
 Y <- rnorm(5)
 beta <- rnorm(4)
-lambda <- 0.1
+lambda <- 0.01
+
+std <- standardizeXY(X, Y)
 
 # Compute R and cpp functions
-out_R <- lasso(X, Y, beta, lambda)
-out_cpp <- lasso(X, Y, beta, lambda)
+out_R <- lasso(std$Xtilde, std$Ytilde, beta, lambda)
+out_cpp <- lasso_c(std$Xtilde, std$Ytilde, beta, lambda)
 
 # Test equality
 testthat::expect_equal(out_R, out_cpp)
@@ -35,17 +37,34 @@ testthat::expect_equal(out_R, out_cpp)
 lambda <- 2.2
 
 # Compute R and cpp functions
-out_R <- lasso(X, Y, beta, lambda)
-out_cpp <- lasso(X, Y, beta, lambda)
+out_R <- lasso(std$Xtilde, std$Ytilde, beta, lambda)
+out_cpp <- lasso_c(std$Xtilde, std$Ytilde, beta, lambda)
 
 # Test equality
 testthat::expect_equal(out_R, out_cpp)
 
 # Do at least 2 tests for fitLASSOstandardized function below. You are checking output agreements on at least 2 separate inputs
 #################################################
+lambda = 0.01
+out_cpp <- fitLASSOstandardized_c(std$Xtilde, std$Ytilde, lambda = lambda, beta_start = beta)
+out_R <- fitLASSOstandardized(std$Xtilde, std$Ytilde, lambda = lambda, beta_start = beta)
+
+testthat::expect_equal(out_R$beta, as.vector(out_cpp))
+
+# Test with new beta
+beta = c(1, 2, 3, 4)
+out_cpp <- fitLASSOstandardized_c(std$Xtilde, std$Ytilde, lambda = lambda, beta_start = beta)
+out_R <- fitLASSOstandardized(std$Xtilde, std$Ytilde, lambda = lambda, beta_start = beta)
+
+testthat::expect_equal(out_R$beta, as.vector(out_cpp))
 
 # Do microbenchmark on fitLASSOstandardized vs fitLASSOstandardized_c
 ######################################################################
+microbenchmark::microbenchmark(
+  fitLASSOstandardized_c(std$Xtilde, std$Ytilde, lambda = lambda, beta_start = beta),
+  fitLASSOstandardized(std$Xtilde, std$Ytilde, lambda = lambda, beta_start = beta),
+  times = 10
+)
 
 # Do at least 2 tests for fitLASSOstandardized_seq function below. You are checking output agreements on at least 2 separate inputs
 #################################################
