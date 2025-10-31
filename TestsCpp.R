@@ -68,9 +68,24 @@ microbenchmark::microbenchmark(
 
 # Do at least 2 tests for fitLASSOstandardized_seq function below. You are checking output agreements on at least 2 separate inputs
 #################################################
+lambda_seq = c(0.02, 0.01, 0.001)
+out_cpp <- fitLASSOstandardized_seq_c(std$Xtilde, std$Ytilde, lambda_seq = lambda_seq)
+out_R <- fitLASSOstandardized_seq(std$Xtilde, std$Ytilde, lambda_seq = lambda_seq)
+testthat::expect_equal(out_R$beta, out_cpp)
+
+# Longer lambda_seq
+lambda_seq = c(10, 1, 0.1, 0.01, 0.001, 0)
+out_cpp <- fitLASSOstandardized_seq_c(std$Xtilde, std$Ytilde, lambda_seq = lambda_seq)
+out_R <- fitLASSOstandardized_seq(std$Xtilde, std$Ytilde, lambda_seq = lambda_seq)
+testthat::expect_equal(out_R$beta, out_cpp)
 
 # Do microbenchmark on fitLASSOstandardized_seq vs fitLASSOstandardized_seq_c
 ######################################################################
+microbenchmark::microbenchmark(
+  fitLASSOstandardized_seq_c(std$Xtilde, std$Ytilde, lambda_seq = lambda_seq),
+  fitLASSOstandardized_seq(std$Xtilde, std$Ytilde, lambda_seq = lambda_seq),
+  times = 10
+)
 
 # Tests on riboflavin data
 ##########################
