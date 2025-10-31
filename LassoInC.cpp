@@ -25,7 +25,7 @@ double lasso_c(const arma::mat& Xtilde, const arma::colvec& Ytilde, const arma::
   arma::colvec r = Ytilde - Xtilde * beta;
   
   // Calculate objective function
-  double fobj = (1.0 / 2.0 * n) * arma::dot(r, r) + lambda * arma::sum(arma::abs(beta));
+  double fobj = (1.0 / (2.0 * n)) * arma::dot(r, r) + lambda * arma::sum(arma::abs(beta));
   
   return fobj;
 }
@@ -34,6 +34,53 @@ double lasso_c(const arma::mat& Xtilde, const arma::colvec& Ytilde, const arma::
 // [[Rcpp::export]]
 arma::colvec fitLASSOstandardized_c(const arma::mat& Xtilde, const arma::colvec& Ytilde, double lambda, const arma::colvec& beta_start, double eps = 0.001){
   // Your function code goes here
+  int n = Xtilde.n_rows;
+  int p = Xtilde.n_cols;
+  
+  // Check for starting point beta_start
+  // If none supplied, initialize with vector of zeroes
+  arma::colvec beta;
+  if (beta_start.is_empty()){
+    beta = arma::zeros<arma::colvec>(p);
+  } else{
+    beta = beta_start;
+  }
+  
+  // Calculate residuals
+  arma::colvec r = Ytilde - Xtilde * beta;
+  arma::rowvec denom = arma::sum(arma::square(Xtilde), 0) / n;
+  
+  // Set error for while loop
+  double err = 1000.00;
+  double obj_old = lasso_c(Xtilde, Ytilde, beta, lambda);
+  
+  while (err> eps){
+    for(int j = 0; j < p; ++j){
+      arma::colvec xj = Xtilde.col(j);
+      double bj_old = beta(j);
+      
+      // Calculate rho_j
+      double rho_j = arma::dot(xj, r + xj * bj_old) / n;
+      
+      // Use soft thresholding to calculating now beta_j
+      double bj_new = soft_c(rho_j, lambda) / denom(j);
+      
+      // Recalculate residual
+      if (bj_new != bj_old){
+        double delta = bj_new - bj_old;
+        r -= xj * delta;
+        beta(j) = bj_new;
+      }
+    }
+    
+    // Calculate new fmin using objective function
+    double fmin = lasso_c(Xtilde, Ytilde, beta, lambda);
+    
+    //Recalculate error
+    err = obj_old - fmin;
+    obj_old = fmin;
+  }
+  return beta;
 }  
 
 // Lasso coordinate-descent on standardized data with supplied lambda_seq. 
