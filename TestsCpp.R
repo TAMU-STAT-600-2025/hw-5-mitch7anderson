@@ -102,8 +102,10 @@ out <- standardizeXY(riboflavin$x, riboflavin$y)
 outl <- fitLASSOstandardized_seq(out$Xtilde, out$Ytilde, n_lambda = 30)
 
 # The code below should assess your speed improvement on riboflavin data
-microbenchmark(
+microbenchmark::microbenchmark(
   fitLASSOstandardized_seq(out$Xtilde, out$Ytilde, outl$lambda_seq),
   fitLASSOstandardized_seq_c(out$Xtilde, out$Ytilde, outl$lambda_seq),
   times = 10
 )
+
+# Code in c++ is about 35-40 times faster than R equivalent
